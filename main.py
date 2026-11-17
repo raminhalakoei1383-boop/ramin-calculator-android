@@ -129,7 +129,7 @@ class RaminCalculator(App):
                     and prefix[-2] not in '+-*/('):
                 operator = prefix[-1]
                 left = prefix[:-1]
-                percent = f'({left}*({number})/100)'
+                percent = f'(({left})*({number})/100)'
                 self.expression = f'{left}{operator}{percent}'
             else:
                 self.expression = f'{prefix}({number}/100)'
