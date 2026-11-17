@@ -1,6 +1,7 @@
+import re
+
 from kivy.app import App
 from kivy.lang import Builder
-from kivy.core.window import Window
 from kivy.properties import StringProperty
 
 KV = '''
@@ -109,30 +110,51 @@ BoxLayout:
 
 class RaminCalculator(App):
     display = StringProperty('0')
+
     def build(self):
         self.expression = ''
         return Builder.load_string(KV)
+
     def add(self, value):
         if self.display == 'خطا':
             self.clear()
-        if value == '%' and self.expression:
-            self.expression += '/100'
+
+        if value == '%':
+            match = re.search(r'(\d+(?:\.\d*)?|\.\d+)$', self.expression)
+            if not match:
+                return
+            number = match.group(1)
+            prefix = self.expression[:match.start()]
+            if (prefix.endswith(('+', '-')) and len(prefix) > 1
+                    and prefix[-2] not in '+-*/('):
+                operator = prefix[-1]
+                left = prefix[:-1]
+                percent = f'({left}*({number})/100)'
+                self.expression = f'{left}{operator}{percent}'
+            else:
+                self.expression = f'{prefix}({number}/100)'
         else:
             self.expression += value
+
         self.display = self.expression or '0'
+
     def clear(self):
         self.expression = ''
         self.display = '0'
+
     def backspace(self):
         self.expression = self.expression[:-1]
         self.display = self.expression or '0'
+
     def negate(self):
-        if self.expression:
-            try:
-                self.expression = str(-float(self.expression))
-                self.display = self.expression
-            except Exception:
-                self.display = 'خطا'
+        if not self.expression:
+            return
+        if self.expression.startswith('-(') and self.expression.endswith(')'):
+            self.expression = self.expression[2:-1]
+        else:
+            self.expression = f'-({self.expression})'
+        self.display = self.expression
+
     def calculate(self):
         try:
             allowed = set('0123456789+-*/.() ')
