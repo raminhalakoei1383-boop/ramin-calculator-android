@@ -11,6 +11,7 @@ fullscreen = 0
 android.minapi = 26
 android.api = 35
 android.accept_sdk_license = True
+p4a.branch = master
 
 [buildozer]
 log_level = 2
